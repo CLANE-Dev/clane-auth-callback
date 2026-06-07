@@ -14,27 +14,31 @@ CLANE 製品（Electron デスクトップアプリ）は、外部ブラウザ�
 https://clane-dev.github.io/clane-auth-callback/auth-callback.html
 ```
 
-## 使い方（製品ごと）
+## 使い方（製品ごと）— 製品別の「クエリ無し固定ページ」を使う（推奨）
 
-製品は `redirect_to` に `?app=<スキーム>` を付けて指定する。ページはそのスキームへ
-`#access_token=...` を引き継いで転送する。
+> **重要（実地で判明）:** Supabase の `redirect_to` に **クエリ文字列（`?app=...`）を付けると
+> 許可リスト照合が通らず**、Site URL（既定 `localhost:3000`）にフォールバックする。
+> 一方、**クエリ無しの URL（カスタムスキーム `clane-xxx://auth` や素の https パス）は確実に通る。**
+> そこで製品ごとに **クエリ不要の固定パスのページ**を用意し、`redirect_to` はクエリ無しにする。
 
-| 製品 | スキーム | redirect_to に渡す URL |
+| 製品 | スキーム | redirect_to に渡す URL（クエリ無し・推奨） |
 |---|---|---|
-| awpw | `clane-awpw` | `https://clane-dev.github.io/clane-auth-callback/auth-callback.html?app=clane-awpw` |
-| Form Auto Runner | `clane-form-ar` | `https://clane-dev.github.io/clane-auth-callback/auth-callback.html?app=clane-form-ar` |
+| Form Auto Runner | `clane-form-ar` | `https://clane-dev.github.io/clane-auth-callback/form-ar.html` |
+| awpw | `clane-awpw` | （必要時 `awpw.html` を追加。当面は `clane-awpw://auth` 直行のまま） |
 
-`?app=` 未指定・未知のスキームは `clane-awpw` にフォールバック。許可スキームは
-`auth-callback.html` 内の `ALLOWED` 配列で管理（任意スキームへの転送を防ぐため）。新製品を
-追加するときは `ALLOWED` に追記し、この表も更新する。
+各ページは固定スキームへ `#access_token=...` を引き継いで転送する（`form-ar.html` は
+`clane-form-ar://auth` 固定）。新製品を足すときは `<product>.html` を1枚追加する。
+
+`auth-callback.html`（`?app=` で切替える汎用版）も残しているが、上記の Supabase 挙動のため
+**本番の redirect_to にはクエリ無しの製品別ページを使うこと**。
 
 ## 設定手順（製品側）
 
-1. **Supabase**: Authentication → URL Configuration → Redirect URLs に
-   `https://clane-dev.github.io/clane-auth-callback/auth-callback.html` を追加
-   （`?app=` 付きクエリは同一ベース URL として許可される。カスタムスキーム `clane-xxx://auth` も併せて残す）。
-2. **製品の設定**（例: Form Auto Runner の `account-config.js`）:
-   `authRedirect: 'https://clane-dev.github.io/clane-auth-callback/auth-callback.html?app=clane-form-ar'`
+1. **Supabase**: Authentication → URL Configuration → **Redirect URLs** に
+   `https://clane-dev.github.io/clane-auth-callback/form-ar.html` を追加（**クエリは付けない**）。
+   カスタムスキーム `clane-form-ar://auth` も fallback として残す。
+2. **製品の設定**（Form Auto Runner の `account-config.js`）:
+   `authRedirect: 'https://clane-dev.github.io/clane-auth-callback/form-ar.html'`
 
 ## 正準ソース
 
