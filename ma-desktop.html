@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ログイン処理中… — CLANE</title>
+  <style>
+    :root { --clane-1:#461787; --clane-2:#A057A2; }
+    body { margin:0; font-family:"Noto Sans JP","Hiragino Sans",system-ui,sans-serif;
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background:#f6f4fa; color:#2a2233; }
+    .card { background:#fff; border:1px solid #e7e3ee; border-radius:16px; padding:36px 40px;
+      text-align:center; box-shadow:0 8px 24px rgba(70,23,135,.08); max-width:420px; }
+    .badge { width:56px; height:56px; border-radius:16px; margin:0 auto 16px;
+      background:linear-gradient(135deg,var(--clane-1),var(--clane-2)); display:flex;
+      align-items:center; justify-content:center; color:#fff; }
+    .badge svg { width:30px; height:30px; }
+    h1 { font-size:18px; margin:0 0 8px; }
+    p { font-size:14px; color:#6b6478; line-height:1.7; margin:0; }
+    .hint { margin-top:18px; font-size:12px; color:#9a93a8; }
+    a.btn { display:inline-block; margin-top:16px; color:var(--clane-1); font-weight:700; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <h1 id="title">ログインを完了しています…</h1>
+    <p id="msg">アプリに戻ります。自動で戻らない場合は下のリンクを押してください。</p>
+    <p class="hint" id="hint">このタブは閉じてかまいません。</p>
+    <p><a class="btn" id="manual" href="#">アプリを開く</a></p>
+  </div>
+  <script>
+    // CLANE MA フォーム送信（デスクトップ）専用の OAuth 戻り中継ページ（クエリ不要・固定スキーム）。正準ソース。
+    // 配信実体は GitHub Pages の CLANE-Dev/clane-auth-callback（このファイルのミラー）。
+    // Supabase の redirect_to にクエリ文字列を付けると許可リスト照合が不安定なため、
+    // 製品ごとに固定パスのページを用意し、redirect_to はクエリ無しの素の URL にする。
+    // Supabase は #access_token=... のフラグメントを付けて戻すので、それを clane-ma-desktop:// へ渡す。
+    (function () {
+      var target = 'clane-ma-desktop://auth' + (window.location.hash || '');
+      var a = document.getElementById('manual');
+      a.href = target;
+      try { window.location.replace(target); } catch (e) {}
+      setTimeout(function () {
+        document.getElementById('title').textContent = 'ログインが完了しました';
+        document.getElementById('msg').textContent = 'アプリに戻りました。このタブは閉じてかまいません。';
+        try { window.close(); } catch (e) {}
+      }, 1200);
+    })();
+  </script>
+</body>
+</html>
